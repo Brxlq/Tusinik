@@ -1,0 +1,34 @@
+@startuml 04-sequence-simplify-url
+title Tusinik — Scenario S1: simplify a page by URL (DIP-8)
+skinparam shadowing false
+skinparam defaultFontName Arial
+actor Reader
+participant "Web client" as UI
+participant "REST API" as API
+participant "Simplification\nservice" as SVC
+participant "Page fetcher +\nextractor" as EXT
+participant "LLM adapter" as LLM
+participant "Meaning\nchecker" as CHK
+database "Cache" as DB
+
+Reader -> UI : paste URL, choose level 2
+UI -> API : POST /api/v1/simplify {url, level, lang?}
+API -> SVC : simplify(request)
+SVC -> DB : find(url, level, lang)
+alt cached (< 24 h)
+  DB --> SVC : result
+else not cached
+  SVC -> EXT : fetch and extract main content
+  EXT --> SVC : blocks (headings, paragraphs, lists)
+  loop for each block
+    SVC -> LLM : simplify(block, level, language)
+    LLM --> SVC : simplified block
+    SVC -> CHK : check(original, simplified)
+    CHK --> SVC : pass / flagged
+  end
+  SVC -> DB : store(url, level, lang, result)
+end
+SVC --> API : blocks + flags + readability indicators
+API --> UI : 200 JSON
+UI -> Reader : reading view; flagged blocks show warning and original
+@enduml

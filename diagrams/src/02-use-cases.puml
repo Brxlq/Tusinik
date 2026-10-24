@@ -1,0 +1,54 @@
+@startuml 02-use-cases
+title Tusinik — Use case diagram (DIP-8)
+skinparam shadowing false
+skinparam defaultFontName Arial
+left to right direction
+
+actor "Reader" as Reader
+actor "Relative /\ncaregiver" as Relative
+actor "Speech-language\ntherapist" as Therapist
+actor "API client" as Api
+actor "Language-model\nprovider" as LLM <<system>>
+
+Relative --|> Reader
+Therapist --|> Reader
+
+rectangle "Tusinik" {
+  usecase "UC1 Simplify a web page\nby URL" as UC1
+  usecase "UC2 Simplify pasted text" as UC2
+  usecase "UC3 Choose simplification\nlevel" as UC3
+  usecase "UC4 Read simplified text\nin reading view" as UC4
+  usecase "UC5 Compare with\noriginal block" as UC5
+  usecase "UC6 Listen to text\n(text-to-speech)" as UC6
+  usecase "UC7 Adjust display\nsettings" as UC7
+  usecase "UC8 Show icons\nwith captions" as UC8
+  usecase "UC9 Open or clear\nhistory" as UC9
+  usecase "UC10 Switch interface\nlanguage" as UC10
+  usecase "UC11 Rate the result" as UC11
+  usecase "Extract main content" as X1
+  usecase "Check meaning\npreservation" as X2
+  usecase "Simplify with\nlanguage model" as X3
+  usecase "UC12 Call simplification\nAPI" as UC12
+}
+
+Reader --> UC1
+Reader --> UC2
+Reader --> UC4
+Reader --> UC6
+Reader --> UC7
+Reader --> UC9
+Reader --> UC10
+Reader --> UC11
+Api --> UC12
+
+UC1 ..> X1 : <<include>>
+UC1 ..> X3 : <<include>>
+UC2 ..> X3 : <<include>>
+UC12 ..> X3 : <<include>>
+X3 ..> X2 : <<include>>
+UC3 ..> UC1 : <<extend>>
+UC3 ..> UC2 : <<extend>>
+UC5 ..> UC4 : <<extend>>
+UC8 ..> UC4 : <<extend>>
+X3 --> LLM
+@enduml

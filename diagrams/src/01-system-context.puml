@@ -1,0 +1,31 @@
+@startuml 01-system-context
+title Tusinik — System context (DIP-8)
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam rectangle {
+  BackgroundColor<<system>> #DDEBFF
+  BorderColor<<system>> #1F4E9A
+  BackgroundColor<<external>> #F2F2F2
+  BorderColor<<external>> #777777
+}
+left to right direction
+
+actor "Reader\n(person with aphasia)" as Reader
+actor "Relative / caregiver" as Relative
+actor "Speech-language\ntherapist" as Therapist
+actor "Developer of\nanother client" as Dev
+
+rectangle "Tusinik platform\n\nExtracts the main text of a web page or\npasted text, simplifies it at a chosen level\n(RU / KZ / EN), checks meaning and shows\nit in an accessible reading view" <<system>> as Tusinik
+
+rectangle "Public websites\n(news, government,\nhealth information)" <<external>> as Web
+rectangle "Language-model API\n(hosted provider,\nselected in P1)" <<external>> as LLM
+rectangle "User's browser\n(Web Speech API,\nlocal storage)" <<external>> as Browser
+
+Reader --> Tusinik : URL or text,\nlevel, settings
+Relative --> Tusinik : URL or text
+Therapist --> Tusinik : prepares materials
+Dev --> Tusinik : REST API (OpenAPI)
+Tusinik --> Web : HTTP GET page\n(public pages only)
+Tusinik --> LLM : text block +\nlevel instructions
+Tusinik --> Browser : read aloud,\nsettings, history
+@enduml
