@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tusinik — clickable prototype</title>
+<!--
+  Tusinik clickable prototype (YouTrack DIP-9).
+  Static HTML/CSS/JS, no server. Sample content is invented for demonstration
+  (a fictional "Riverside Health Centre" page) and is not real medical advice.
+  Open this file in a browser. Requirement IDs refer to docs/06-requirements.md.
+-->
+<style>
+:root{
+  --bg:#fbfaf7; --surface:#ffffff; --text:#1b1d21; --muted:#4f5560; --line:#d9dce1;
+  --accent:#1d5fbf; --accent-text:#ffffff; --warn-bg:#fff4d6; --warn-line:#b07a00;
+  --orig-bg:#f1f3f6; --focus:#ff9e1b;
+  --fs:20px; --lh:1.6;
+}
+body.contrast{
+  --bg:#000; --surface:#000; --text:#fff; --muted:#e6e6e6; --line:#fff;
+  --accent:#ffd400; --accent-text:#000; --warn-bg:#000; --warn-line:#ffd400; --orig-bg:#1a1a1a; --focus:#00e5ff;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font-family:Arial,"Segoe UI",Helvetica,sans-serif;font-size:var(--fs);line-height:var(--lh)}
+a{color:var(--accent)}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.skip{position:absolute;left:-999px}.skip:focus{left:8px;top:8px;background:var(--surface);padding:8px;z-index:10}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--surface);flex-wrap:wrap}
+.brand{font-weight:700;font-size:1.2em;letter-spacing:.02em}
+.brand small{display:block;font-weight:400;font-size:.65em;color:var(--muted)}
+nav.tabs{display:flex;gap:6px;flex-wrap:wrap}
+nav.tabs button,.lang button{min-height:44px;min-width:44px;padding:6px 12px;border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:8px;font:inherit;font-size:.8em;cursor:pointer}
+nav.tabs button[aria-current="page"],.lang button[aria-pressed="true"]{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+.lang{display:flex;gap:4px}
+main{max-width:860px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:1.5em;line-height:1.25;margin:.2em 0 .6em}
+h2{font-size:1.2em;margin:1.2em 0 .4em}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;margin:12px 0}
+label{display:block;font-weight:700;margin-bottom:6px}
+input[type=url],textarea{width:100%;min-height:52px;padding:10px 12px;font:inherit;border:2px solid var(--line);border-radius:8px;background:var(--surface);color:var(--text)}
+textarea{min-height:140px}
+.hint{color:var(--muted);font-size:.8em;margin:6px 0 0}
+.switch-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.btn{min-height:48px;padding:10px 20px;border-radius:10px;border:2px solid var(--accent);background:var(--surface);color:var(--accent);font:inherit;font-weight:700;cursor:pointer}
+.btn.primary{background:var(--accent);color:var(--accent-text)}
+.btn.small{min-height:44px;padding:6px 12px;font-size:.8em}
+.btn[aria-pressed="true"]{background:var(--accent);color:var(--accent-text)}
+main:focus{outline:none}
+.levels{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.levels label{font-weight:400;border:2px solid var(--line);border-radius:10px;padding:10px;cursor:pointer;margin:0;min-height:44px}
+.levels input{margin-right:6px;transform:scale(1.3)}
+.levels label:has(input:checked){border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.levels b{display:block}
+.levels span{font-size:.75em;color:var(--muted)}
+.notice{font-size:.8em;color:var(--muted);border-left:4px solid var(--line);padding-left:10px;margin-top:14px}
+.err{background:var(--warn-bg);border:2px solid var(--warn-line);border-radius:10px;padding:14px;margin-top:12px}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;position:sticky;top:0;background:var(--bg);padding:10px 0;border-bottom:1px solid var(--line);z-index:2}
+.toolbar .sep{flex:1}
+.block{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:12px 0}
+.block.flagged{border:2px solid var(--warn-line);background:var(--warn-bg)}
+.block .flag{font-size:.8em;font-weight:700;margin-bottom:6px}
+.block ul{padding-left:1.2em;margin:.3em 0}
+.block li{margin:.25em 0}
+.block .reading{border-radius:6px}
+.speaking{background:#ffe58a;color:#000}
+.icons{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+.icon{display:flex;flex-direction:column;align-items:center;width:84px;font-size:.7em;text-align:center}
+.icon svg{width:48px;height:48px}
+.orig{background:var(--orig-bg);border-radius:8px;padding:10px 12px;margin-top:10px;font-size:.85em}
+.orig b{display:block;font-size:.8em;color:var(--muted)}
+.pair{display:grid;grid-template-columns:1fr;gap:10px}
+@media (min-width:760px){.pair.side{grid-template-columns:1fr 1fr}.pair.side .orig{margin-top:0}}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;font-size:.8em}
+.metrics div{border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--surface)}
+.footer-note{font-size:.75em;color:var(--muted);margin-top:24px;border-top:1px solid var(--line);padding-top:10px}
+.loader{display:flex;align-items:center;gap:14px}
+.spin{width:36px;height:36px;border:5px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:s 1s linear infinite}
+@keyframes s{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}
+.steps li{margin:.3em 0}
+fieldset{border:none;padding:0;margin:0 0 16px}
+legend{font-weight:700;margin-bottom:6px}
+.opts{display:flex;gap:8px;flex-wrap:wrap}
+.opts label{font-weight:400;border:2px solid var(--line);border-radius:10px;padding:8px 14px;cursor:pointer;min-height:44px;margin:0}
+.opts label:has(input:checked){border-color:var(--accent)}
+.hist-item{display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid var(--line);padding:10px 0;flex-wrap:wrap}
+.hist-item small{color:var(--muted);display:block}
+.proto-banner{background:#243b55;color:#fff;font-size:13px;padding:6px 16px;text-align:center}
+[hidden]{display:none!important}
+.rate{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+</style>
+</head>
+<body>
+<a class="skip" href="#main" data-i18n="skip">Skip to content</a>
+<div class="proto-banner" data-i18n="banner">Prototype for design review — sample content is invented, no real processing.</div>
+<header class="top">
+  <div class="brand">Tusinik <small data-i18n="tagline">Web pages made easier to read</small></div>
+  <nav class="tabs" aria-label="Main">
+    <button data-go="home" aria-current="page" data-i18n="nav_home">Simplify</button>
+    <button data-go="history" data-i18n="nav_history">History</button>
+    <button data-go="settings" data-i18n="nav_settings">Settings</button>
+  </nav>
+  <div class="lang" role="group" aria-label="Interface language">
+    <button data-lang="ru" aria-pressed="false">RU</button>
+    <button data-lang="kk" aria-pressed="false">KZ</button>
+    <button data-lang="en" aria-pressed="true">EN</button>
+  </div>
+</header>
+
+<main id="main" tabindex="-1">
+
+<!-- Screen 1: input (S1, S2, S4) -->
+<section id="scr-home" aria-labelledby="h-home">
+  <h1 id="h-home" data-i18n="home_title">What do you want to read?</h1>
+  <div class="card">
+    <div class="switch-row" role="group" aria-label="Input type">
+      <button class="btn small" id="mode-url" aria-pressed="true" data-i18n="mode_url">Link to a page</button>
+      <button class="btn small" id="mode-text" aria-pressed="false" data-i18n="mode_text">Paste text</button>
+    </div>
+    <div id="in-url">
+      <label for="url" data-i18n="url_label">Page link</label>
+      <input id="url" type="url" inputmode="url" placeholder="https://" value="https://riverside-health.example/flu-vaccine">
+      <p class="hint" data-i18n="url_hint">Try the filled-in example, or type "login" to see the error screen.</p>
+    </div>
+    <div id="in-text" hidden>
+      <label for="text" data-i18n="text_label">Text</label>
+      <textarea id="text" maxlength="10000"></textarea>
+      <p class="hint" data-i18n="text_hint">Up to 10,000 characters. Pasted text is not saved.</p>
+    </div>
+    <h2 id="lvl-h" data-i18n="level_title">How simple?</h2>
+    <div class="levels" role="radiogroup" aria-labelledby="lvl-h">
+      <label><input type="radio" name="level" value="1"><b data-i18n="l1">Light</b><span data-i18n="l1d">Easier words</span></label>
+      <label><input type="radio" name="level" value="2" checked><b data-i18n="l2">Medium</b><span data-i18n="l2d">Short sentences</span></label>
+      <label><input type="radio" name="level" value="3"><b data-i18n="l3">Strong</b><span data-i18n="l3d">Main points as a list</span></label>
+    </div>
+    <p style="margin-top:18px"><button class="btn primary" id="go" data-i18n="go">Make it easier</button></p>
+    <p class="notice" data-i18n="privacy">The text is simplified by an external AI service. Pasted text is not stored. This is a reading aid, not medical advice.</p>
+    <div class="err" id="err" hidden role="alert">
+      <b data-i18n="err_title">We cannot open this page.</b>
+      <p data-i18n="err_body">The page needs a login. Copy the text from the page and choose "Paste text".</p>
+      <button class="btn small" id="err-paste" data-i18n="mode_text">Paste text</button>
+    </div>
+  </div>
+</section>
+
+<!-- Screen 2: processing (NFR-01) -->
+<section id="scr-load" hidden aria-live="polite">
+  <h1 data-i18n="load_title">Making the text easier…</h1>
+  <div class="card loader"><div class="spin" aria-hidden="true"></div>
+    <ol class="steps">
+      <li data-i18n="step1">Opening the page</li>
+      <li data-i18n="step2">Finding the main text</li>
+      <li data-i18n="step3">Simplifying and checking the meaning</li>
+    </ol>
+  </div>
+</section>
+
+<!-- Screen 3: reading view (FR-07..FR-12) -->
+<section id="scr-read" hidden aria-labelledby="h-read">
+  <div class="toolbar" role="toolbar" aria-label="Reading tools">
+    <button class="btn small" id="tts-play" data-i18n="listen">▶ Listen</button>
+    <button class="btn small" id="tts-stop" data-i18n="stop">■ Stop</button>
+    <label for="rate" style="margin:0;font-size:.75em" data-i18n="speed">Speed</label>
+    <select id="rate" style="min-height:44px;font:inherit;font-size:.8em">
+      <option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option>
+    </select>
+    <span class="sep"></span>
+    <button class="btn small" id="orig-all" aria-pressed="false" data-i18n="orig_all">Show original</button>
+    <button class="btn small" id="icons-btn" aria-pressed="false" data-i18n="icons">Icons</button>
+    <label for="lvl-sel" style="margin:0;font-size:.75em" data-i18n="level_short">Level</label>
+    <select id="lvl-sel" style="min-height:44px;font:inherit;font-size:.8em">
+      <option value="1">1</option><option value="2" selected>2</option><option value="3">3</option>
+    </select>
+  </div>
+  <p class="hint" id="tts-msg" role="status"></p>
+  <h1 id="h-read">Flu vaccine</h1>
+  <p class="hint"><span data-i18n="source">Source</span>: riverside-health.example · <span data-i18n="lang_detected">Language: English</span></p>
+  <div id="blocks"></div>
+  <details class="card">
+    <summary data-i18n="metrics_title">How much easier? (readability indicators)</summary>
+    <div class="metrics" style="margin-top:10px">
+      <div><b data-i18n="m_sent">Average sentence length</b><br>23.5 → <span id="m1">9.8</span> <span data-i18n="words">words</span></div>
+      <div><b data-i18n="m_long">Long words</b><br>31 % → <span id="m2">14 %</span></div>
+      <div><b data-i18n="m_flag">Blocks to check</b><br><span id="m3">1</span> / 4</div>
+    </div>
+  </details>
+  <div class="card rate">
+    <span data-i18n="rate_q">Was this easier to read?</span>
+    <button class="btn small" data-rate data-i18n="yes">Yes</button>
+    <button class="btn small" data-rate data-i18n="partly">Partly</button>
+    <button class="btn small" data-rate data-i18n="no">No</button>
+    <span id="rate-ok" role="status"></span>
+  </div>
+  <p class="footer-note" data-i18n="disclaimer">Tusinik is a reading aid, not medical advice. If a block is marked, check the original text.</p>
+</section>
+
+<!-- Screen 4: settings (FR-10, FR-12, FR-14) -->
+<section id="scr-settings" hidden aria-labelledby="h-set">
+  <h1 id="h-set" data-i18n="nav_settings">Settings</h1>
+  <div class="card">
+    <fieldset><legend data-i18n="font">Text size</legend><div class="opts">
+      <label><input type="radio" name="fs" value="18px"> A</label>
+      <label><input type="radio" name="fs" value="20px" checked> <span style="font-size:1.15em">A</span></label>
+      <label><input type="radio" name="fs" value="24px"> <span style="font-size:1.35em">A</span></label>
+    </div></fieldset>
+    <fieldset><legend data-i18n="spacing">Line spacing</legend><div class="opts">
+      <label><input type="radio" name="lh" value="1.6" checked> <span data-i18n="normal">Normal</span></label>
+      <label><input type="radio" name="lh" value="2"> <span data-i18n="wide">Wide</span></label>
+    </div></fieldset>
+    <fieldset><legend data-i18n="contrast">Colours</legend><div class="opts">
+      <label><input type="radio" name="ct" value="0" checked> <span data-i18n="standard">Standard</span></label>
+      <label><input type="radio" name="ct" value="1"> <span data-i18n="high">High contrast</span></label>
+    </div></fieldset>
+    <fieldset><legend data-i18n="icons_set">Icons with captions</legend><div class="opts">
+      <label><input type="radio" name="ic" value="0" checked> <span data-i18n="off">Off</span></label>
+      <label><input type="radio" name="ic" value="1"> <span data-i18n="on">On</span></label>
+    </div></fieldset>
+    <p class="hint" data-i18n="saved_local">Settings are saved only in this browser.</p>
+  </div>
+</section>
+
+<!-- Screen 5: history (FR-13) -->
+<section id="scr-history" hidden aria-labelledby="h-hist">
+  <h1 id="h-hist" data-i18n="nav_history">History</h1>
+  <div class="card" id="hist-list"></div>
+  <button class="btn" id="hist-clear" data-i18n="clear">Clear history</button>
+  <p class="hint" data-i18n="hist_local">History is kept only in this browser (last 20 pages).</p>
+</section>
+</main>
+
+<script>
+const I18N={
+ en:{skip:"Skip to content",banner:"Prototype for design review — sample content is invented, no real processing.",tagline:"Web pages made easier to read",nav_home:"Simplify",nav_history:"History",nav_settings:"Settings",home_title:"What do you want to read?",mode_url:"Link to a page",mode_text:"Paste text",url_label:"Page link",url_hint:"Try the filled-in example, or type \"login\" to see the error screen.",text_label:"Text",text_hint:"Up to 10,000 characters. Pasted text is not saved.",level_title:"How simple?",l1:"Light",l1d:"Easier words",l2:"Medium",l2d:"Short sentences",l3:"Strong",l3d:"Main points as a list",go:"Make it easier",privacy:"The text is simplified by an external AI service. Pasted text is not stored. This is a reading aid, not medical advice.",err_title:"We cannot open this page.",err_body:"The page needs a login. Copy the text from the page and choose \"Paste text\".",load_title:"Making the text easier…",step1:"Opening the page",step2:"Finding the main text",step3:"Simplifying and checking the meaning",listen:"▶ Listen",stop:"■ Stop",speed:"Speed",orig_all:"Show original",icons:"Icons",level_short:"Level",source:"Source",lang_detected:"Language: English",metrics_title:"How much easier? (readability indicators)",m_sent:"Average sentence length",m_long:"Long words",m_flag:"Blocks to check",words:"words",rate_q:"Was this easier to read?",yes:"Yes",partly:"Partly",no:"No",thanks:"Thank you!",disclaimer:"Tusinik is a reading aid, not medical advice. If a block is marked, check the original text.",font:"Text size",spacing:"Line spacing",normal:"Normal",wide:"Wide",contrast:"Colours",standard:"Standard",high:"High contrast",icons_set:"Icons with captions",off:"Off",on:"On",saved_local:"Settings are saved only in this browser.",clear:"Clear history",hist_local:"History is kept only in this browser (last 20 pages).",hist_empty:"No pages yet.",open:"Open",flag:"⚠ Please check: a number from the original is missing here. Compare with the original.",original:"Original",show_orig:"Original",no_voice:"Read-aloud is not available in this browser.",level_word:"Level"},
+ ru:{skip:"Перейти к содержанию",banner:"Прототип для обсуждения дизайна — пример текста вымышленный, обработки нет.",tagline:"Веб-страницы, которые легче читать",nav_home:"Упростить",nav_history:"История",nav_settings:"Настройки",home_title:"Что вы хотите прочитать?",mode_url:"Ссылка на страницу",mode_text:"Вставить текст",url_label:"Ссылка на страницу",url_hint:"Попробуйте готовый пример или введите «login», чтобы увидеть экран ошибки.",text_label:"Текст",text_hint:"До 10 000 знаков. Вставленный текст не сохраняется.",level_title:"Насколько упростить?",l1:"Слегка",l1d:"Проще слова",l2:"Средне",l2d:"Короткие предложения",l3:"Сильно",l3d:"Главное списком",go:"Упростить",privacy:"Текст упрощает внешний сервис ИИ. Вставленный текст не хранится. Это помощь в чтении, а не медицинский совет.",err_title:"Не получается открыть страницу.",err_body:"Для страницы нужен вход. Скопируйте текст со страницы и выберите «Вставить текст».",load_title:"Упрощаем текст…",step1:"Открываем страницу",step2:"Находим основной текст",step3:"Упрощаем и проверяем смысл",listen:"▶ Слушать",stop:"■ Стоп",speed:"Скорость",orig_all:"Показать оригинал",icons:"Иконки",level_short:"Уровень",source:"Источник",lang_detected:"Язык: английский",metrics_title:"Насколько проще? (показатели читаемости)",m_sent:"Средняя длина предложения",m_long:"Длинные слова",m_flag:"Блоки для проверки",words:"слов",rate_q:"Читать стало легче?",yes:"Да",partly:"Частично",no:"Нет",thanks:"Спасибо!",disclaimer:"Tusinik помогает читать, но не даёт медицинских советов. Если блок отмечен, сверьте его с оригиналом.",font:"Размер текста",spacing:"Межстрочный интервал",normal:"Обычный",wide:"Широкий",contrast:"Цвета",standard:"Обычные",high:"Высокий контраст",icons_set:"Иконки с подписями",off:"Выкл.",on:"Вкл.",saved_local:"Настройки сохраняются только в этом браузере.",clear:"Очистить историю",hist_local:"История хранится только в этом браузере (последние 20 страниц).",hist_empty:"Пока нет страниц.",open:"Открыть",flag:"⚠ Проверьте: здесь пропало число из оригинала. Сравните с оригиналом.",original:"Оригинал",show_orig:"Оригинал",no_voice:"Озвучивание недоступно в этом браузере.",level_word:"Уровень"},
+ kk:{skip:"Мазмұнға өту",banner:"Дизайнды талқылауға арналған прототип — мәтін мысалы ойдан алынған, нақты өңдеу жоқ.",tagline:"Оқуға жеңіл веб-беттер",nav_home:"Жеңілдету",nav_history:"Тарих",nav_settings:"Баптаулар",home_title:"Не оқығыңыз келеді?",mode_url:"Бетке сілтеме",mode_text:"Мәтін қою",url_label:"Бет сілтемесі",url_hint:"Дайын мысалды көріңіз немесе қате экранын көру үшін «login» деп жазыңыз.",text_label:"Мәтін",text_hint:"10 000 таңбаға дейін. Қойылған мәтін сақталмайды.",level_title:"Қаншалықты жеңілдету керек?",l1:"Аздап",l1d:"Жеңіл сөздер",l2:"Орташа",l2d:"Қысқа сөйлемдер",l3:"Көп",l3d:"Негізгісі тізіммен",go:"Жеңілдету",privacy:"Мәтінді сыртқы ЖИ қызметі жеңілдетеді. Қойылған мәтін сақталмайды. Бұл оқуға көмек, медициналық кеңес емес.",err_title:"Бұл бетті ашу мүмкін емес.",err_body:"Бетке кіру қажет. Беттегі мәтінді көшіріп, «Мәтін қою» батырмасын таңдаңыз.",load_title:"Мәтінді жеңілдетіп жатырмыз…",step1:"Бетті ашып жатырмыз",step2:"Негізгі мәтінді табып жатырмыз",step3:"Жеңілдетіп, мағынасын тексеріп жатырмыз",listen:"▶ Тыңдау",stop:"■ Тоқтату",speed:"Жылдамдық",orig_all:"Түпнұсқаны көрсету",icons:"Белгішелер",level_short:"Деңгей",source:"Дереккөз",lang_detected:"Тілі: ағылшын",metrics_title:"Қаншалықты жеңілдеді? (оқылу көрсеткіштері)",m_sent:"Сөйлемнің орташа ұзындығы",m_long:"Ұзын сөздер",m_flag:"Тексеретін блоктар",words:"сөз",rate_q:"Оқу жеңілдеді ме?",yes:"Иә",partly:"Ішінара",no:"Жоқ",thanks:"Рахмет!",disclaimer:"Tusinik оқуға көмектеседі, бірақ медициналық кеңес бермейді. Блок белгіленсе, түпнұсқамен салыстырыңыз.",font:"Мәтін өлшемі",spacing:"Жол аралығы",normal:"Қалыпты",wide:"Кең",contrast:"Түстер",standard:"Қалыпты",high:"Жоғары контраст",icons_set:"Жазуы бар белгішелер",off:"Өшірулі",on:"Қосулы",saved_local:"Баптаулар тек осы браузерде сақталады.",clear:"Тарихты тазалау",hist_local:"Тарих тек осы браузерде сақталады (соңғы 20 бет).",hist_empty:"Әзірге беттер жоқ.",open:"Ашу",flag:"⚠ Тексеріңіз: мұнда түпнұсқадағы сан жоқ. Түпнұсқамен салыстырыңыз.",original:"Түпнұсқа",show_orig:"Түпнұсқа",no_voice:"Бұл браузерде дауыстап оқу қолжетімсіз.",level_word:"Деңгей"}
+};
+// Invented sample page (fictional organisation, example domain).
+const ORIG=[
+ "Seasonal influenza vaccination is recommended annually for all individuals aged 6 months and older, particularly those with chronic medical conditions, including cardiovascular disease and diabetes, as well as people who have experienced a stroke.",
+ "The vaccine becomes effective approximately two weeks after administration, and protection typically persists throughout the influenza season, which in our region generally extends from November to March.",
+ "Appointments can be scheduled at the Riverside Health Centre reception, by telephone on 8 700 000 00 00, or online; vaccination is provided free of charge for patients over 65 years of age.",
+ "Mild adverse reactions, such as soreness at the injection site, low-grade fever or fatigue, may occur and usually resolve within one to two days without intervention."
+];
+const SIMPLE={
+ 1:["A flu vaccine is recommended every year for everyone older than 6 months. It is especially important for people with long-term illnesses, such as heart disease or diabetes, and for people who have had a stroke.",
+    "The vaccine starts to work about two weeks after the injection. It protects you during the flu season. Here, the flu season is usually from November to March.",
+    "You can book a visit at the Riverside Health Centre desk, by phone on 8 700 000 00 00, or online. The vaccine is free for people older than 65.",
+    "Some people feel mild side effects, such as a sore arm, a slight fever or tiredness. These usually go away in one or two days."],
+ 2:["Get a flu vaccine every year. This is for everyone older than 6 months. It is very important if you have heart disease or diabetes. It is also important if you had a stroke.",
+    "The vaccine works after about two weeks. It protects you during the flu season. Flu season here is from November to March.",
+    "Book a visit at the Riverside Health Centre desk. Or call 8 700 000 00 00. Or book online. The vaccine is free if you are older than 65.",
+    "Your arm may hurt a little. You may have a small fever. You may feel tired. This goes away in a few days."],
+ 3:[["Get a flu vaccine every year.","It is for everyone older than 6 months.","It is very important after a stroke.","It is important with heart disease or diabetes."],
+    ["It works after two weeks.","It protects you from November to March."],
+    ["Book at the desk, by phone or online.","Phone: 8 700 000 00 00.","Free if you are older than 65."],
+    ["Your arm may hurt.","You may have a small fever or feel tired.","This goes away in a few days."]]
+};
+// Demo of the meaning check (FR-07): at levels 2 and 3 the last block lost "one to two days", so it is flagged and the original is shown.
+const FLAGGED={1:[],2:[3],3:[3]};
+const ICONS=[[["syringe","Vaccine"],["heart","Heart"]],[["calendar","November–March"]],[["phone","Phone"],["money","Free"]],[["bed","Rest"]]];
+const SVG={
+ syringe:'<path d="M14 34l16-16 6 6-16 16H14v-6z" fill="none" stroke="currentColor" stroke-width="3"/><path d="M30 18l4-4m4 4l-4-4m6 2l-6-6" stroke="currentColor" stroke-width="3"/>',
+ heart:'<path d="M24 40S8 30 8 19a8 8 0 0116-3 8 8 0 0116 3c0 11-16 21-16 21z" fill="none" stroke="currentColor" stroke-width="3"/>',
+ calendar:'<rect x="8" y="12" width="32" height="28" rx="3" fill="none" stroke="currentColor" stroke-width="3"/><path d="M8 20h32M16 8v8M32 8v8" stroke="currentColor" stroke-width="3"/>',
+ phone:'<path d="M14 8h8l3 9-5 3a20 20 0 008 8l3-5 9 3v8a3 3 0 01-3 3C21 37 11 27 11 11a3 3 0 013-3z" fill="none" stroke="currentColor" stroke-width="3"/>',
+ money:'<circle cx="24" cy="24" r="15" fill="none" stroke="currentColor" stroke-width="3"/><path d="M28 18h-6a3 3 0 000 6h4a3 3 0 010 6h-6M24 14v4m0 12v4" stroke="currentColor" stroke-width="3" fill="none"/>',
+ bed:'<path d="M6 34V14m0 12h36v8M42 34V26M12 22a3 3 0 106 0 3 3 0 00-6 0zM20 20h16a6 6 0 016 6" fill="none" stroke="currentColor" stroke-width="3"/>'
+};
+let lang="en",level=2,showOrigAll=false,iconsOn=false;
+const t=k=>(I18N[lang][k]??I18N.en[k]??k);
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+function store(k,v){try{localStorage.setItem("tusinik_"+k,JSON.stringify(v))}catch(e){}}
+function load(k,d){try{const v=localStorage.getItem("tusinik_"+k);return v==null?d:JSON.parse(v)}catch(e){return d}}
+function applyI18n(){document.documentElement.lang=lang==="kk"?"kk":lang;$$("[data-i18n]").forEach(el=>el.textContent=t(el.dataset.i18n));$$("[data-lang]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.lang===lang));renderBlocks();renderHistory();}
+function show(id){["home","load","read","settings","history"].forEach(s=>$("#scr-"+s).hidden=s!==id);$$("nav.tabs button").forEach(b=>{if(b.dataset.go===id||((id==="read"||id==="load")&&b.dataset.go==="home"))b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});if(id==="history")renderHistory();$("#main").focus();window.scrollTo(0,0)}
+function renderBlocks(){
+ const box=$("#blocks"); if(!box) return; box.innerHTML="";
+ SIMPLE[level].forEach((s,i)=>{
+  const flagged=FLAGGED[level].includes(i);
+  const d=document.createElement("article"); d.className="block"+(flagged?" flagged":""); d.dataset.i=i;
+  let simple=Array.isArray(s)?"<ul>"+s.map(x=>`<li class="reading">${x}</li>`).join("")+"</ul>":`<p class="reading" style="margin:0">${s}</p>`;
+  const origOpen=showOrigAll||flagged;
+  d.innerHTML=(flagged?`<div class="flag">${t("flag")}</div>`:"")+
+   `<div class="pair ${origOpen?"side":""}"><div>${simple}${iconsOn?`<div class="icons">${ICONS[i].map(([k,c])=>`<div class="icon"><svg viewBox="0 0 48 48" role="img" aria-label="${c}">${SVG[k]}</svg>${c}</div>`).join("")}</div>`:""}</div>`+
+   (origOpen?`<div class="orig"><b>${t("original")}</b>${ORIG[i]}</div>`:"")+`</div>`+
+   `<p style="margin:10px 0 0"><button class="btn small" data-orig="${i}" aria-pressed="${origOpen}">${t("show_orig")}</button></p>`;
+  box.appendChild(d);
+ });
+ $("#m3").textContent=FLAGGED[level].length; $("#m1").textContent={1:"14.2",2:"9.8",3:"6.1"}[level]; $("#m2").textContent={1:"19 %",2:"14 %",3:"11 %"}[level];
+ $$("[data-orig]").forEach(b=>b.onclick=()=>{const blk=b.closest(".block");const open=b.getAttribute("aria-pressed")!=="true";const pair=blk.querySelector(".pair");let o=blk.querySelector(".orig");if(open&&!o){o=document.createElement("div");o.className="orig";o.innerHTML=`<b>${t("original")}</b>${ORIG[+b.dataset.orig]}`;pair.appendChild(o);}if(!open&&o)o.remove();pair.classList.toggle("side",open);b.setAttribute("aria-pressed",open)});
+}
+function addHistory(){const h=load("history",[]);h.unshift({title:"Flu vaccine",src:"riverside-health.example",level,date:new Date().toISOString().slice(0,10)});store("history",h.slice(0,20))}
+function renderHistory(){const box=$("#hist-list");if(!box)return;const h=load("history",[]);box.innerHTML=h.length?"":`<p>${t("hist_empty")}</p>`;h.forEach(it=>{const r=document.createElement("div");r.className="hist-item";r.innerHTML=`<div><b>${it.title}</b><small>${it.src} · ${t("level_word")} ${it.level} · ${it.date}</small></div><button class="btn small">${t("open")}</button>`;r.querySelector("button").onclick=()=>{level=it.level;$("#lvl-sel").value=level;renderBlocks();show("read")};box.appendChild(r)})}
+// Navigation
+$$("[data-go]").forEach(b=>b.onclick=()=>show(b.dataset.go));
+$$("[data-lang]").forEach(b=>b.onclick=()=>{lang=b.dataset.lang;store("lang",lang);applyI18n()});
+function setMode(text){$("#in-url").hidden=text;$("#in-text").hidden=!text;$("#mode-url").setAttribute("aria-pressed",!text);$("#mode-text").setAttribute("aria-pressed",text);$("#err").hidden=true}
+$("#mode-url").onclick=()=>setMode(false); $("#mode-text").onclick=()=>{setMode(true);$("#text").focus()}; $("#err-paste").onclick=()=>{setMode(true);$("#text").focus()};
+$("#go").onclick=()=>{
+ const urlMode=!$("#in-url").hidden;
+ if(urlMode&&/login/i.test($("#url").value)){$("#err").hidden=false;$("#err").focus?.();return}
+ level=+document.querySelector("input[name=level]:checked").value;$("#lvl-sel").value=level;
+ show("load");setTimeout(()=>{renderBlocks();addHistory();show("read")},1600);
+};
+$("#lvl-sel").onchange=e=>{level=+e.target.value;renderBlocks()};
+$("#orig-all").onclick=e=>{showOrigAll=!showOrigAll;e.target.setAttribute("aria-pressed",showOrigAll);renderBlocks()};
+$("#icons-btn").onclick=e=>{iconsOn=!iconsOn;e.target.setAttribute("aria-pressed",iconsOn);store("icons",iconsOn);setRadio("ic",iconsOn?"1":"0");renderBlocks()};
+$$("[data-rate]").forEach(b=>b.onclick=()=>$("#rate-ok").textContent=t("thanks"));
+$("#hist-clear").onclick=()=>{store("history",[]);renderHistory()};
+// Settings
+function setRadio(n,v){const r=document.querySelector(`input[name=${n}][value="${v}"]`);if(r)r.checked=true}
+function applySettings(){const fs=load("fs","20px"),lh=load("lh","1.6"),ct=load("ct","0");document.documentElement.style.setProperty("--fs",fs);document.documentElement.style.setProperty("--lh",lh);document.body.classList.toggle("contrast",ct==="1");iconsOn=load("icons",false);setRadio("fs",fs);setRadio("lh",lh);setRadio("ct",ct);setRadio("ic",iconsOn?"1":"0");$("#icons-btn").setAttribute("aria-pressed",iconsOn)}
+$$("input[name=fs],input[name=lh],input[name=ct],input[name=ic]").forEach(r=>r.onchange=()=>{if(r.name==="ic")store("icons",r.value==="1");else store(r.name,r.value);applySettings();renderBlocks()});
+// Text-to-speech (real Web Speech API if available)
+let utter=null;
+$("#tts-play").onclick=()=>{
+ if(!("speechSynthesis" in window)){$("#tts-msg").textContent=t("no_voice");return}
+ speechSynthesis.cancel();const els=$$("#blocks .reading");let i=0;
+ const next=()=>{els.forEach(e=>e.classList.remove("speaking"));if(i>=els.length)return;const el=els[i++];el.classList.add("speaking");utter=new SpeechSynthesisUtterance(el.textContent);utter.lang="en-GB";utter.rate=+$("#rate").value;utter.onend=next;utter.onerror=()=>{el.classList.remove("speaking");$("#tts-msg").textContent=t("no_voice")};speechSynthesis.speak(utter)};
+ next();
+};
+$("#tts-stop").onclick=()=>{if("speechSynthesis" in window)speechSynthesis.cancel();$$(".speaking").forEach(e=>e.classList.remove("speaking"))};
+// Start
+lang=load("lang","en");applySettings();applyI18n();
+const params=new URLSearchParams(location.search);if(params.get("screen")){if(params.get("screen")==="read"){level=+(params.get("level")||2);$("#lvl-sel").value=level;if(params.get("orig"))showOrigAll=true;if(params.get("icons"))iconsOn=true;renderBlocks()}if(params.get("screen")==="error"){$("#url").value="https://intranet.example/login";$("#go").click()}else show(params.get("screen"))}
+</script>
+</body>
+</html>
