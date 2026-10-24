@@ -8,13 +8,13 @@ This log records each comment from the supervisor, the team's decision and where
 
 | # | Date | Comment from the supervisor | Decision | Where addressed (file, PR) | Status |
 |---|---|---|---|---|---|
-| — | — | | — | — | Waiting |
+| 1 | 24.10.26 | Move from documentation to a demonstrable MVP. | Build FastAPI/React MVP with health endpoint, pasted-text simplification and automated tests. | future implementation PRs | Planned |
 
 ## 2. Requests sent to the supervisor
 
 | Date | What was sent | Channel |
 |---|---|---|
-| — | Materials will be sent after the `prob-period-1` tag is created, with the message in section 4 | Email / messenger |
+| 24.10.26 | Link to the repository at tag prob-period-1, consolidated PDF report, prototype and request to review the pre-defense materials. | Teams |
 
 
 ## 5. How comments are processed
