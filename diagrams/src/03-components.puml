@@ -1,0 +1,55 @@
+@startuml 03-components
+title Tusinik — Component diagram, draft (DIP-8)
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam componentStyle rectangle
+
+package "Web client (React + TypeScript)" {
+  [Input screen] as UIIn
+  [Reading view] as UIRead
+  [Settings & i18n\n(RU / KZ / EN)] as UISet
+  [Read-aloud controller] as UITts
+  [History store\n(local storage)] as UIHist
+  [API client] as UIApi
+}
+
+package "Backend (FastAPI)" {
+  [REST API layer\n/api/v1 + OpenAPI] as API
+  [Simplification service\n(orchestrator)] as SVC
+  [Page fetcher\n(SSRF guard, limits)] as FETCH
+  [Content extractor\n(Trafilatura + BS4)] as EXT
+  [Language detector] as LANG
+  [LLM adapter\n(provider interface)] as LLMA
+  [Rule-based safety layer\n(level rules)] as RULES
+  [Meaning checker\n(entities, numbers, similarity)] as CHECK
+  [Readability metrics] as MET
+  [Cache & feedback repository] as REPO
+}
+
+database "PostgreSQL\n(cache 24 h, ratings,\nevaluation runs)" as DB
+cloud "Language-model API" as LLM
+cloud "Public websites" as WEB
+node "Browser Web Speech API" as WSA
+
+UIIn --> UIApi
+UIRead --> UIApi
+UIRead --> UITts
+UITts --> WSA
+UIRead --> UIHist
+UISet --> UIRead
+UIApi --> API : HTTPS / JSON
+
+API --> SVC
+SVC --> FETCH
+FETCH --> WEB
+SVC --> EXT
+SVC --> LANG
+SVC --> LLMA
+LLMA --> LLM
+SVC --> RULES
+SVC --> CHECK
+SVC --> MET
+SVC --> REPO
+API --> REPO : feedback
+REPO --> DB
+@enduml
